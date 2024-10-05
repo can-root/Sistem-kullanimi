@@ -8,24 +8,21 @@ from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, QL
 from PyQt5.QtGui import QPainter, QColor, QPalette
 from PyQt5.QtCore import QTimer
 
-# JSON dosyasının yolu
 KURAL_DOSYASI = 'kural.json'
 
 class GrafikWidget(QWidget):
     def __init__(self):
         super().__init__()
         self.setAutoFillBackground(True)
-        self.setPalette(QPalette(QColor(50, 50, 50)))  # Koyu gri arka plan
+        self.setPalette(QPalette(QColor(50, 50, 50)))  
 
-        # Başlangıç değerleri
         self.cpu_kullanimi = 0
         self.ram_kullanimi = 0
         self.disk_kullanimi = 0
 
-        # Zamanlayıcı ile güncelleme
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.guncelle)
-        self.timer.start(1000)  # Her saniye güncelle
+        self.timer.start(1000)  
 
     def guncelle(self):
         self.cpu_kullanimi = psutil.cpu_percent()
@@ -33,13 +30,12 @@ class GrafikWidget(QWidget):
         self.ram_kullanimi = ram.percent
         disk = psutil.disk_usage('/')
         self.disk_kullanimi = disk.percent
-        self.update()  # Widget'ı güncelle
+        self.update()  
 
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
 
-        # Dikey grafikleri çizin
         self.cizim(painter, self.cpu_kullanimi, 50, "CPU Kullanımı")
         self.cizim(painter, self.ram_kullanimi, 200, "RAM Kullanımı")
         self.cizim(painter, self.disk_kullanimi, 350, "Disk Kullanımı")
@@ -49,14 +45,14 @@ class GrafikWidget(QWidget):
         painter.setBrush(color)
 
         yükseklik = int(deger * 3)
-        painter.drawRect(x_pos, 400 - yükseklik, 30, yükseklik)  # 0-100 arası 0-400 piksel
-        painter.drawText(x_pos, 420, f"{baslik}: {deger}%")  # Yazı konumu
+        painter.drawRect(x_pos, 400 - yükseklik, 30, yükseklik) 
+        painter.drawText(x_pos, 420, f"{baslik}: {deger}%") 
 
     def hesapla_renk(self, deger):
         if deger >= 100:
-            return QColor(255, 0, 0)  # Kırmızı
+            return QColor(255, 0, 0) 
         elif deger <= 0:
-            return QColor(0, 255, 0)  # Yeşil
+            return QColor(0, 255, 0)  
         else:
             red = int(255 * (deger / 100))
             green = int(255 * (1 - deger / 100))
@@ -71,8 +67,8 @@ class CihazBilgileriWidget(QWidget):
     def bilgi_yazilari(self):
         self.layout.addWidget(QLabel(f"İşletim Sistemi: {platform.system()} {platform.release()}"))
         self.layout.addWidget(QLabel(f"Cihaz Adı: {platform.node()}"))
-        self.layout.addWidget(QLabel(f"RAM: {self.get_ram_bilgisi():.2f} GB"))  # İki ondalık basamak
-        self.layout.addWidget(QLabel(f"Disk: {self.get_disk_bilgisi():.2f} GB"))  # İki ondalık basamak
+        self.layout.addWidget(QLabel(f"RAM: {self.get_ram_bilgisi():.2f} GB"))  
+        self.layout.addWidget(QLabel(f"Disk: {self.get_disk_bilgisi():.2f} GB"))  
         self.layout.addWidget(QLabel(f"Ekran Kartı: {self.get_ekran_kartları()}"))
 
     def get_ram_bilgisi(self):
@@ -89,9 +85,8 @@ class KurallarWidget(QWidget):
     def __init__(self):
         super().__init__()
         self.layout = QVBoxLayout(self)
-        self.layout.addWidget(QLabel("<b>Maksimum Kullanım Limitleri (Yüzde)</b>"))  # Kalın yazı ile
+        self.layout.addWidget(QLabel("<b>Maksimum Kullanım Limitleri (Yüzde)</b>"))  
 
-        # Girdi alanları
         self.cpu_limit_input = QLineEdit(self)
         self.ram_limit_input = QLineEdit(self)
 
@@ -101,14 +96,13 @@ class KurallarWidget(QWidget):
         self.layout.addWidget(QLabel("Maksimum RAM:"))
         self.layout.addWidget(self.ram_limit_input)
 
-        # Kaydet butonu
         self.save_button = QPushButton("Kaydet", self)
         self.save_button.clicked.connect(self.kaydet)
         self.layout.addWidget(self.save_button)
 
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.kontrol_et)
-        self.timer.start(5000)  # Her 5 saniyede bir kontrol et
+        self.timer.start(5000)  
         self.kurallari_yukle()
 
     def kurallari_yukle(self):
@@ -126,7 +120,6 @@ class KurallarWidget(QWidget):
             max_cpu = int(self.cpu_limit_input.text())
             max_ram = int(self.ram_limit_input.text())
 
-            # Verileri JSON dosyasına kaydet
             with open(KURAL_DOSYASI, 'w') as f:
                 json.dump({'max_cpu': max_cpu, 'max_ram': max_ram}, f)
 
@@ -151,7 +144,7 @@ class KurallarWidget(QWidget):
                     except (psutil.NoSuchProcess, psutil.AccessDenied):
                         continue
         except (FileNotFoundError, json.JSONDecodeError):
-            pass  # Dosya yoksa veya hatalı JSON durumunda hiçbir şey yapma
+            pass  
 
 class AnaPencere(QMainWindow):
     def __init__(self):
@@ -175,7 +168,6 @@ class AnaPencere(QMainWindow):
 if __name__ == '__main__':
     app = QApplication(sys.argv)
 
-    # Gerekli kütüphaneleri yükle
     try:
         import psutil
         import GPUtil
